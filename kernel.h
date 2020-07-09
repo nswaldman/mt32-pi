@@ -24,10 +24,12 @@
 #include <circle/cputhrottle.h>
 #include <circle/i2cmaster.h>
 #include <circle/i2ssoundbasedevice.h>
+#include <circle/sched/scheduler.h>
 #include <circle_stdlib_app.h>
 
 #include <vector>
 
+#include "clcd.h"
 #include "mt32synth.h"
 
 class CKernel : public CStdlibApp
@@ -47,6 +49,7 @@ protected:
 #endif
 	CTimer mTimer;
 	CLogger mLogger;
+	CScheduler mScheduler;
 	CUSBHCIDevice mUSBHCI;
 #ifndef BAKE_MT32_ROMS
 	CEMMCDevice mEMMC;
@@ -54,6 +57,7 @@ protected:
 	FATFS mFileSystem;
 
 	CI2CMaster mI2CMaster;
+	CCharacterLCD* mLCD;
 
 private:
 	bool InitPCM5242();
@@ -63,6 +67,10 @@ private:
 	void UpdateSerialMIDI();
 	void UpdateActiveSense();
 	void LEDOn();
+
+	void LCDLog(const char* pMessage);
+
+	unsigned mLCDUpdateTime;
 
 	// Serial GPIO MIDI
 	bool mSerialMIDIEnabled;
@@ -81,6 +89,7 @@ private:
 	CMT32SynthBase* mSynth;
 
 	static void MIDIPacketHandler(unsigned nCable, u8 *pPacket, unsigned nLength);
+	static void LCDMessageHandler(const char* pMessage);
 	static CKernel *pThis;
 };
 
