@@ -48,6 +48,10 @@ private:
 	void UpdatePartLevels(const CMT32SynthBase* pSynth);
 	void DrawPartLevels();
 
+	// TODO: Make these constexpr and generate a compile-time converted version of the font
+	u8 GetFontColumn(char pChar, u8 pColumn);
+	u16 GetDoubleHeightFontColumn(char pChar, u8 pColumn);
+
 	// MIDI velocity range [1-127] to bar graph height range [0-16] scale factor
 	static constexpr float VelocityScale = 16.f / (127.f - 1.f);
 

@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "fonts.h"
+#include "font6x8.h"
 #include "mt32synth.h"
 #include "ssd1306.h"
 
@@ -121,32 +121,6 @@ void CSSD1306::ClearPixel(u8 pX, u8 pY)
 	mFramebuffer[((pY & 0xf8) << 4) + pX + 1] &= ~(1 << (pY & 7));
 }
 
-u8 GetFontColumn(char pChar, u8 pColumn)
-{
-	size_t fontIndex = pChar - ' ';
-	u8 bit = 5 - pColumn;
-
-	u8 column = 0;
-	for (u8 i = 0; i < 8; ++i)
-		column |= ((FONT_6X8[fontIndex][i] >> bit) & 1) << i;
-
-	return column;
-}
-
-u16 GetDoubleHeightColumn(char pChar, u8 pColumn)
-{
-	u8 fontColumn = GetFontColumn(pChar, pColumn);
-	u16 doubleHeightColumn = 0;
-
-	for (u8 i = 0; i < 8; ++i)
-	{
-		bool bit = (fontColumn >> i) & 1;
-		doubleHeightColumn |= (bit << (i * 2)) | (bit << (i * 2 + 1));
-	}
-
-	return doubleHeightColumn;
-}
-
 void CSSD1306::DrawChar(char pChar, u8 pCursorX, u8 pCursorY, bool pInverted, bool pDoubleWidth)
 {
 	size_t rowOffset = pCursorY * 128 * 2;
@@ -154,7 +128,7 @@ void CSSD1306::DrawChar(char pChar, u8 pCursorX, u8 pCursorY, bool pInverted, bo
 
 	for (u8 i = 0; i < 6; ++i)
 	{
-		u16 fontColumn = GetDoubleHeightColumn(pChar, i);
+		u16 fontColumn = GetDoubleHeightFontColumn(pChar, i);
 
 		// Don't invert the leftmost column or last two rows
 		if (i > 0 && pInverted)
@@ -255,6 +229,32 @@ void CSSD1306::DrawPartLevels()
 			mFramebuffer[256 + i * 14 + j + 128 + 3] = bottomVal;
 		}
 	}
+}
+
+u8 CSSD1306::GetFontColumn(char pChar, u8 pColumn)
+{
+	size_t fontIndex = pChar - ' ';
+	u8 bit = 5 - pColumn;
+
+	u8 column = 0;
+	for (u8 i = 0; i < 8; ++i)
+		column |= ((FONT_6X8[fontIndex][i] >> bit) & 1) << i;
+
+	return column;
+}
+
+u16 CSSD1306::GetDoubleHeightFontColumn(char pChar, u8 pColumn)
+{
+	u8 fontColumn = GetFontColumn(pChar, pColumn);
+	u16 doubleHeightColumn = 0;
+
+	for (u8 i = 0; i < 8; ++i)
+	{
+		bool bit = (fontColumn >> i) & 1;
+		doubleHeightColumn |= (bit << (i * 2)) | (bit << (i * 2 + 1));
+	}
+
+	return doubleHeightColumn;
 }
 
 void CSSD1306::Print(const char* pText, u8 pCursorX, u8 pCursorY, bool pClearLine, bool pImmediate)
